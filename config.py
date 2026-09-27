@@ -1,0 +1,148 @@
+"""Configuration and metric catalog for the FX macro bias engine."""
+
+from __future__ import annotations
+
+ASSETS = ["USD", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD", "NZD", "XAU"]
+CURRENCIES = ASSETS[:-1]
+
+CATEGORY_WEIGHTS = {
+    "Monetary Policy & Rate Expectations": 18,
+    "Yield Differential": 12,
+    "Inflation": 7,
+    "Labor Market": 7,
+    "Growth": 8,
+    "Economic Momentum": 7,
+    "Trade / Current Account": 5,
+    "Commodities": 6,
+    "China Exposure": 4,
+    "Global Risk": 4,
+    "Safe-Haven Factors": 3,
+    "COT Positioning": 3,
+    "Real Yields": 4,
+    "Valuation": 3,
+    "Fiscal": 2,
+    "Central Bank Balance Sheet": 2,
+    "Economic Surprises": 4,
+    "Expectation Changes": 5,
+    "Geopolitical / Economic Risk": 1,
+}
+
+# Separate model for gold: currencies use the catalog weights above.
+GOLD_CATEGORY_WEIGHTS = {
+    "Real Yields": 20,
+    "Monetary Policy & Rate Expectations": 15,
+    "Yield Differential": 8,
+    "Global Risk": 10,
+    "Safe-Haven Factors": 10,
+    "Commodities": 3,
+    "COT Positioning": 5,
+    "Economic Momentum": 3,
+    "Economic Surprises": 4,
+    "Expectation Changes": 7,
+    "Valuation": 3,
+    "Central Bank Balance Sheet": 5,
+    "Geopolitical / Economic Risk": 5,
+    "Inflation": 2,
+}
+
+# Each item: id, display name, category, group, polarity, scale, unit, applicable assets.
+# polarity: +1 means higher is supportive, -1 means higher is adverse, 0 means categorical.
+METRICS = [
+    ("policy_rate", "Current policy rate", "Monetary Policy & Rate Expectations", "policy_path", 0, 2.0, "%", CURRENCIES),
+    ("policy_stance", "Central-bank policy stance", "Monetary Policy & Rate Expectations", "policy_path", 0, 1, "stance", CURRENCIES),
+    ("expected_rate_3m", "Expected policy rate, 3 months", "Monetary Policy & Rate Expectations", "policy_path", 1, 2.0, "%", CURRENCIES),
+    ("expected_rate_6m", "Expected policy rate, 6 months", "Monetary Policy & Rate Expectations", "policy_path", 1, 2.0, "%", CURRENCIES),
+    ("expected_rate_12m", "Expected policy rate, 12 months", "Monetary Policy & Rate Expectations", "policy_path", 1, 2.0, "%", CURRENCIES),
+    ("rate_expectation_change", "Rate expectation change (3M)", "Expectation Changes", "policy_repricing", 1, 1.0, "pp", CURRENCIES),
+    ("fed_expectations_change", "Expected Fed policy-rate path change", "Expectation Changes", "policy_repricing", -1, 1.0, "pp", ["XAU"]),
+    ("expected_cuts_hikes", "Expected net hikes (+) / cuts (-), 12M", "Monetary Policy & Rate Expectations", "policy_path", 1, 2.0, "moves", CURRENCIES),
+    ("expected_next_move", "Expected next policy move", "Monetary Policy & Rate Expectations", "policy_path", 0, 1, "direction", CURRENCIES),
+    ("central_bank_communication", "Latest central-bank communication / guidance", "Monetary Policy & Rate Expectations", "policy_path", 0, 1, "direction", CURRENCIES),
+    ("yield_2y_change", "2-year government yield change (3M)", "Yield Differential", "short_yields", 1, 1.0, "pp", CURRENCIES),
+    ("yield_2y_week_change", "2-year yield change (weekly)", "Yield Differential", "short_yields", 1, 0.5, "pp", CURRENCIES),
+    ("yield_2y_month_change", "2-year yield change (monthly)", "Yield Differential", "short_yields", 1, 0.75, "pp", CURRENCIES),
+    ("yield_5y_change", "5-year government yield change (3M)", "Yield Differential", "long_yields", 1, 1.0, "pp", CURRENCIES),
+    ("yield_10y_change", "10-year government yield change (3M)", "Yield Differential", "long_yields", 1, 1.0, "pp", CURRENCIES),
+    ("yield_10y_week_change", "10-year yield change (weekly)", "Yield Differential", "long_yields", 1, 0.5, "pp", CURRENCIES),
+    ("yield_10y_month_change", "10-year yield change (monthly)", "Yield Differential", "long_yields", 1, 0.75, "pp", CURRENCIES),
+    ("yield_30y_change", "30-year government yield change (3M)", "Yield Differential", "long_yields", 1, 1.0, "pp", CURRENCIES),
+    ("yield_2y_level", "2-year government yield", "Yield Differential", "short_yields", 1, 3.0, "%", CURRENCIES),
+    ("yield_10y_level", "10-year government yield", "Yield Differential", "long_yields", 1, 3.0, "%", CURRENCIES),
+    ("cpi_yoy", "Headline CPI YoY", "Inflation", "inflation_level", 0, 4.0, "%", CURRENCIES),
+    ("core_cpi_yoy", "Core CPI YoY", "Inflation", "inflation_level", 0, 4.0, "%", CURRENCIES),
+    ("ppi_yoy", "Producer price inflation YoY", "Inflation", "inflation_level", 0, 5.0, "%", CURRENCIES),
+    ("pce_yoy", "PCE / preferred inflation measure YoY", "Inflation", "inflation_level", 0, 4.0, "%", CURRENCIES),
+    ("wage_inflation", "Wage inflation YoY", "Inflation", "inflation_level", 0, 5.0, "%", CURRENCIES),
+    ("inflation_target", "Central-bank inflation target", "Inflation", "inflation_level", 0, 2.0, "%", CURRENCIES),
+    ("inflation_trend", "Inflation trend / persistence", "Inflation", "inflation_change", 0, 1, "direction", CURRENCIES),
+    ("inflation_surprise", "Inflation surprise vs consensus", "Economic Surprises", "inflation_surprise", 0, 1.5, "pp", CURRENCIES),
+    ("unemployment_change", "Unemployment rate change (3M)", "Labor Market", "labor", -1, 1.0, "pp", CURRENCIES),
+    ("unemployment_rate", "Unemployment rate", "Labor Market", "labor", -1, 15.0, "%", CURRENCIES),
+    ("employment_change", "Employment change / growth", "Labor Market", "labor", 1, 2.0, "%", CURRENCIES),
+    ("wage_growth", "Wage growth YoY", "Labor Market", "labor", 1, 5.0, "%", CURRENCIES),
+    ("participation_change", "Labor participation change", "Labor Market", "labor", 1, 1.0, "pp", CURRENCIES),
+    ("vacancies_change", "Job vacancies change", "Labor Market", "labor", 1, 20.0, "%", CURRENCIES),
+    ("claims_change", "Initial / continuing claims change", "Labor Market", "labor", -1, 20.0, "%", ["USD"]),
+    ("gdp_growth", "GDP growth YoY", "Growth", "growth", 1, 5.0, "%", CURRENCIES),
+    ("gdp_qoq", "GDP growth QoQ annualized", "Growth", "growth", 1, 5.0, "%", CURRENCIES),
+    ("gdp_change", "GDP growth change vs prior", "Growth", "growth", 1, 2.0, "pp", CURRENCIES),
+    ("industrial_production", "Industrial production growth YoY", "Growth", "growth", 1, 8.0, "%", CURRENCIES),
+    ("retail_sales", "Retail sales growth YoY", "Growth", "growth", 1, 8.0, "%", CURRENCIES),
+    ("business_investment", "Business investment growth", "Growth", "growth", 1, 10.0, "%", CURRENCIES),
+    ("consumer_spending", "Consumer spending growth", "Growth", "growth", 1, 10.0, "%", CURRENCIES),
+    ("productivity_change", "Productivity growth change", "Growth", "growth", 1, 5.0, "pp", CURRENCIES),
+    ("manufacturing_pmi", "Manufacturing PMI", "Economic Momentum", "surveys", 0, 8.0, "index", CURRENCIES),
+    ("services_pmi", "Services PMI", "Economic Momentum", "surveys", 0, 8.0, "index", CURRENCIES),
+    ("composite_pmi_change", "Composite PMI change (3M)", "Economic Momentum", "surveys", 1, 5.0, "index points", CURRENCIES),
+    ("confidence_change", "Consumer / business confidence change", "Economic Momentum", "confidence", 1, 10.0, "index points", CURRENCIES),
+    ("leading_indicators", "Leading indicators / OECD CLI change", "Economic Momentum", "confidence", 1, 5.0, "index points", CURRENCIES),
+    ("current_account_gdp", "Current account (% of GDP)", "Trade / Current Account", "external", 1, 6.0, "% GDP", CURRENCIES),
+    ("trade_balance_change", "Trade balance improvement", "Trade / Current Account", "external", 1, 5.0, "% GDP", CURRENCIES),
+    ("terms_of_trade_change", "Terms of trade change (3M)", "Trade / Current Account", "external", 1, 10.0, "%", CURRENCIES),
+    ("commodity_change", "Export commodity basket change (3M)", "Commodities", "commodity", 1, 20.0, "%", ["AUD", "CAD", "NZD"]),
+    ("china_pmi", "China manufacturing PMI", "China Exposure", "china", 0, 8.0, "index", ["AUD", "NZD", "CAD"]),
+    ("china_growth_change", "China growth momentum change", "China Exposure", "china", 1, 5.0, "pp", ["AUD", "NZD", "CAD"]),
+    ("china_industrial_production", "China industrial production growth", "China Exposure", "china", 1, 10.0, "%", ["AUD", "NZD", "CAD"]),
+    ("china_retail_sales", "China retail sales growth", "China Exposure", "china", 1, 10.0, "%", ["AUD", "NZD", "CAD"]),
+    ("china_property_change", "China property activity change", "China Exposure", "china", 1, 10.0, "%", ["AUD", "NZD", "CAD"]),
+    ("china_credit_change", "China credit conditions change", "China Exposure", "china", 1, 10.0, "%", ["AUD", "NZD", "CAD"]),
+    ("china_stimulus", "China stimulus / policy impulse", "China Exposure", "china", 0, 1, "direction", ["AUD", "NZD", "CAD"]),
+    ("vix_change", "VIX change (3M)", "Global Risk", "risk", -1, 30.0, "%", ASSETS),
+    ("global_equity_change", "Global equity performance (3M)", "Global Risk", "risk", 1, 20.0, "%", ASSETS),
+    ("credit_spread_change", "Credit spread change (3M)", "Global Risk", "risk", -1, 2.0, "pp", ASSETS),
+    ("financial_conditions_change", "Financial conditions change", "Global Risk", "risk", -1, 5.0, "index points", ASSETS),
+    ("safe_haven_demand", "Observed safe-haven demand", "Safe-Haven Factors", "haven", 0, 1, "direction", ["USD", "JPY", "CHF", "XAU"]),
+    ("cot_percentile", "COT speculative position percentile", "COT Positioning", "positioning", 0, 100, "percentile", ASSETS),
+    ("cot_change", "COT positioning change (4W)", "COT Positioning", "positioning", 1, 50, "percentile points", ASSETS),
+    ("cot_net_position", "COT net speculative positioning", "COT Positioning", "positioning", 1, 100000, "contracts", ASSETS),
+    ("cot_open_interest_change", "COT open interest change (4W)", "COT Positioning", "positioning", 1, 20.0, "%", ASSETS),
+    ("real_yield_change", "Real yield change (3M)", "Real Yields", "real_yield", -1, 1.0, "pp", ["USD", "XAU"]),
+    ("real_yield_level", "Real yield level", "Real Yields", "real_yield", -1, 3.0, "%", ["USD", "XAU"]),
+    ("nominal_yield_change", "Nominal US yield change (3M)", "Yield Differential", "nominal_yield", -1, 1.0, "pp", ["XAU"]),
+    ("inflation_expectations_change", "Inflation expectations change", "Inflation", "gold_inflation_expectations", 1, 1.0, "pp", ["XAU"]),
+    ("usd_fundamental", "USD fundamental condition", "Yield Differential", "usd_link", -1, 100, "score", ["XAU"]),
+    ("gold_demand", "Central-bank / ETF gold demand change", "Commodities", "gold_demand", 1, 20.0, "%", ["XAU"]),
+    ("gold_etf_flows", "Gold ETF flow change", "Commodities", "gold_demand", 1, 20.0, "%", ["XAU"]),
+    ("global_liquidity_change", "Global liquidity change", "Central Bank Balance Sheet", "liquidity", 1, 10.0, "%", ["XAU"]),
+    ("debt_gdp_change", "Debt-to-GDP change (annual)", "Fiscal", "fiscal", -1, 10.0, "pp", CURRENCIES),
+    ("fiscal_balance_change", "Fiscal balance improvement", "Fiscal", "fiscal", 1, 5.0, "pp GDP", CURRENCIES),
+    ("government_bond_supply", "Government bond supply pressure", "Fiscal", "fiscal", -1, 20.0, "%", CURRENCIES),
+    ("capital_flows", "Capital / portfolio flow trend", "Trade / Current Account", "external", 1, 20.0, "%", CURRENCIES),
+    ("reer_percentile", "REER historical percentile", "Valuation", "valuation", 0, 100, "percentile", CURRENCIES),
+    ("reer_change", "REER change (3M)", "Valuation", "valuation", 1, 10.0, "%", CURRENCIES),
+    ("balance_sheet_change", "Central-bank balance sheet change (3M)", "Central Bank Balance Sheet", "liquidity", 1, 10.0, "%", CURRENCIES),
+    ("economic_surprise", "Economic surprise index / net surprise", "Economic Surprises", "surprise", 1, 10.0, "index", CURRENCIES),
+    ("expectation_change", "Macro expectation change", "Expectation Changes", "expectations", 1, 10.0, "index", CURRENCIES),
+    ("geopolitical_impact", "Current geopolitical/economic impact", "Geopolitical / Economic Risk", "geopolitical", 0, 1, "direction", ASSETS),
+]
+
+STANCE_OPTIONS = ["Very dovish", "Dovish", "Neutral", "Hawkish", "Very hawkish"]
+DIRECTION_OPTIONS = ["Negative", "Neutral", "Positive"]
+
+def metric_catalog(asset: str) -> list[dict]:
+    return [
+        {"metric_id": mid, "metric_name": name, "category": category,
+         "group": group, "polarity": polarity, "scale": scale, "unit": unit}
+        for mid, name, category, group, polarity, scale, unit, assets in METRICS
+        if asset in assets
+    ]
